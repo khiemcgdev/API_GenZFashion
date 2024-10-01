@@ -12,7 +12,6 @@ const connect = async ()=>{
     }catch(error){
         console.log(error);
         console.log('connet fail')
-        //https://github.com/dieptvph40380/API_GenZFashion.githttps://github.com/dieptvph40380/API_GenZFashion.git
     }
 }
 module.exports={connect}
