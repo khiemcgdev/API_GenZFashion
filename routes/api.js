@@ -10,13 +10,13 @@ router.post('/add-supplier',Upload.single('image'),async(req,res)=>{
     try{
     const data=req.body;
     const {file}=req
-    const urlsImage =file.map((file)=>`${req.protocol}://${req.get("host")}/uploads/${file.filename}`)
+    const urlsImage =`${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
     const newSuppliers =new Suppliers({
       name:data.name,
       phone:data.phone,
       email:data.email,
       description:data.description,
-      image:urlsImage
+      image:urlsImage,
     })
     const result = await newSuppliers.save();
             if (result) {
