@@ -3,41 +3,40 @@ var router = express.Router();
 
 //Thêm model
 const Product =require("../models/product");
-const Suppliers =require("../models/suppliers");    
-
-//Thêm sản phẩm 
-router.post('/add-product',Upload.single('image'),async(req,res)=>{
+const Suppliers =require("../models/suppliers");
+const Upload=require('../config/common/upload')
+//Thêm nhà cung cấp
+router.post('/add-supplier',Upload.single('image'),async(req,res)=>{
     try{
-        const data =req.body;
-        const { file } = req
-        const newProduct=new Product({
-            quantity:data.quantity,
-            price:data.price,
-            description:data.description,
-            product_name:data.product_name,
-            image:`${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
-            id_suppliers:data.id_suppliers,
-            id_producttype:data.id_producttype,  
-        });
-        const result=await newProduct.save();
-        if (result) {
-            //Nếu thêm thành công result !null trả về dữ liệu
-            res.json({
-              "status": 200,
-              "messenger": "Thêm thành công",
-              "data": result,
-            })
-          } else {
-            //Nếu thêm không thành công result null, thông báo không thành công
-            res.json({
-              "status": 400,
-              "messenger": "Lỗi,thêm không thành công",
-              "data": []
-            })
-          }
-    }catch(error){
-        console.log(error);
+    const data=req.body;
+    const {file}=req
+    const urlsImage =file.map((file)=>`${req.protocol}://${req.get("host")}/uploads/${file.filename}`)
+    const newSuppliers =new Suppliers({
+      name:data.name,
+      phone:data.phone,
+      email:data.email,
+      description:data.description,
+      image:urlsImage
+    })
+    const result = await newSuppliers.save();
+            if (result) {
+                res.json({
+                   "status": 200,
+                    "message": "Thêm nhà cung cấp thành công",
+                   "data": result
+                });
+            } else {
+                res.json({
+                   "status": 400,
+                    "message": "Thất bại",
+                   "data": []
+                });
+            }
+    }catch(err){
+      console.log(err);
     }
-});
+    });
+//Thêm sản phẩm 
+// router.post('/add-product',async(req,))
 
 module.exports= router;
