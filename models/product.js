@@ -7,6 +7,8 @@ const Product=new Scheme({
     description:{type:String},
     product_name:{type:String},
     image:{type:String},
+    id_suppliers:{type:Scheme.Types.ObjectId,ref:'suppliers'},
+    id_producttype:{type:Scheme.Types.ObjectId,ref:'producttype'},
 },{
     timestamps:true,
 })
