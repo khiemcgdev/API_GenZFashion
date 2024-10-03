@@ -9,7 +9,7 @@ const Product=new Scheme({
     image:{type:String},
     state:{type:Boolean},
     id_suppliers:{type:Scheme.Types.ObjectId,ref:'suppliers'},
-    id_producttype:{type:Scheme.Types.ObjectId,ref:'producttype'},
+    id_producttype:{type:Scheme.Types.ObjectId,ref:'typeproducts'},
 },{
     timestamps:true,
 })
