@@ -4,7 +4,6 @@ var router = express.Router();
 //Thêm model
 const Product = require("../models/product");
 const Suppliers = require("../models/suppliers");
-const Client = require("../models/client");
 const Upload = require('../config/common/upload')
 const Sizes = require('../models/sizes')
 const Typeproducts = require('../models/typeproducts')
