@@ -223,7 +223,7 @@ router.put('/update-product/:id', Upload.single('image'), async (req, res) => {
       urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
     }
 
-    // Cập nhật các trường của nhà cung cấp
+    // Cập nhật các trường của sản phẩm
     product.product_name = data.product_name || product.product_name;
     product.price = data.price || product.price;
     product.state = data.state || product.state;
@@ -252,6 +252,31 @@ router.put('/update-product/:id', Upload.single('image'), async (req, res) => {
     res.status(500).json({
       "status": 500,
       "message": "Lỗi server",
+    });
+  }
+});
+// danh sách sản phẩm
+router.get('/prodct', async (req, res) => {
+  try {
+    const productList = await Product.find().sort({ createdAt: -1 });
+    if (productList.length > 0) {
+      res.json({
+        "status": 200,
+        "message": "Lấy danh sách sản phẩm thành công",
+        "data": productList
+      });
+    } else {
+      res.json({
+        "status": 404,
+        "message": "Không có sản phẩm nào",
+        "data": []
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      "status": 500,
+      "message": "Lỗi server"
     });
   }
 });
