@@ -4,6 +4,7 @@ var router = express.Router();
 //Thêm model
 const Product =require("../models/product");
 const Suppliers =require("../models/suppliers");
+const Client =require("../models/client");
 const Upload=require('../config/common/upload')
 const Sizes =require('../models/sizes')
 const Typeproducts=require('../models/typeproducts')
@@ -150,6 +151,39 @@ router.get('/get-supplier-by-name', async (req,res)=>{
       console.log(error)
   }
 })
+//tìm kiếm sản phẩm
+router.get('/get-product-by-name', async (req,res)=>{
+  try {
+      const product_name = req.query.product_name
+      const data = await Product.find({product_name: {"$regex": product_name, "$options": "i"}}).sort({createdAt: -1})
+      res.json({
+          "status":200,
+          "messenger":"Tìm kiếm thành công",
+          "data":data
+      })
+  } catch (error) {
+      console.log(error)
+  }
+})
+              // Thêm sản phẩm 
+router.post('/add-product',Upload.single('image'),async(req,res)=>{
+  const newProduct =new Product({
+    quantity:data.quantity,
+    price:data.price,
+    description:data.description,
+    product_name:data.product_name,
+    state:data.state,
+    id_suppliers:data.id_suppliers,
+    id_producttype:data.id_producttype,
+    image:urlsImage,
+  })
+  const result = await newProduct.save();
+          if (result) {
+              res.json({
+                 "status": 200,
+                  "message": "Thêm sản phẩm thành công",
+
+
 //* Size
 //thêm size
 router.post('/add-size', async (req, res) => {
@@ -198,13 +232,16 @@ router.get("/get-list-size", async (req, res) => {
     console.log(error);
   }
 });
-//** loại sản phẩm */
+
+
+            //** loại sản phẩm */
 // thêm loại
 router.post('/add-type',Upload.single('image'),async(req,res)=>{
   try{
   const data=req.body;
   const {file}=req
   const urlsImage =`${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+
   const newTypeproducts =new Typeproducts({
     name:data.name,
     image:urlsImage,
@@ -215,6 +252,7 @@ router.post('/add-type',Upload.single('image'),async(req,res)=>{
               res.json({
                  "status": 200,
                   "message": "Thêm thành công",
+
                  "data": result
               });
           } else {
@@ -228,6 +266,7 @@ router.post('/add-type',Upload.single('image'),async(req,res)=>{
     console.log(err);
   }
   });
+
   // danh sách loại sản phẩm
   router.get('/typeproduct', async (req, res) => {
     try {
@@ -322,4 +361,9 @@ router.post('/add-type',Upload.single('image'),async(req,res)=>{
       });
     }
   });
+
+
+
+
+
 module.exports= router;
