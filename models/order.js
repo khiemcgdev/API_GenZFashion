@@ -7,12 +7,12 @@ const Order = new Scheme({
         required: true
     },
     id_cart: {
-        type: Schema.Types.ObjectId,
+        type: Scheme.Types.ObjectId,
         ref: 'cart', // Liên kết với giỏ hàng (Cart)
         required: true
     },
     id_voucher: {
-        type: Schema.Types.ObjectId,
+        type: Scheme.Types.ObjectId,
         ref: 'vouchers', // Liên kết với voucher (nếu có)
         default: null
     },
