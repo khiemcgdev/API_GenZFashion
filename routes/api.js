@@ -994,6 +994,43 @@ router.get("/get-cart/:userId", async (req, res) => {
       res.status(500).json({ message: err.message });
   }
 });
+router.delete("/remove-product", async (req, res) => {
+  const { userId, productId } = req.body; // userId: ID của người dùng, productId: ID sản phẩm cần xóa
+
+  if (!userId || !productId) {
+      return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  try {
+      const cart = await Cart.findOne({ userId });
+      if (!cart) {
+          return res.status(404).json({ message: 'Cart not found' });
+      }
+
+      // Tìm và xóa sản phẩm trong giỏ hàng
+      const productIndex = cart.products.findIndex(item => item.productId.toString() === productId);
+      if (productIndex === -1) {
+          return res.status(404).json({ message: 'Product not found in cart' });
+      }
+
+      cart.products.splice(productIndex, 1); // Xóa sản phẩm khỏi giỏ hàng
+
+      // Tính lại tổng giá trị giỏ hàng
+      cart.totalPrice = await calculateTotalPrice(cart.products);
+
+      await cart.save();
+
+      res.status(200).json({
+          status: 200,
+          message: "Product removed from cart successfully",
+          data: cart
+      });
+  } catch (err) {
+      res.status(500).json({ message: err.message });
+  }
+});
+
+
 
 /*Đơn hàng*/
 //Thêm đơn hàng
