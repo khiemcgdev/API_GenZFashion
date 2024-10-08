@@ -10,6 +10,8 @@ const Evaluate = require('../models/evaluate')
 const Favourite = require('../models/favourite')
 const Cart = require('../models/cart')
 const Typeproducts = require('../models/typeproducts')
+const Typevouchers=require('../models/typevouchers')
+const Vouchers=require('../models/vouchers')
 //Thêm nhà cung cấp
 router.post('/add-supplier', Upload.single('image'), async (req, res) => {
   try {
@@ -308,7 +310,6 @@ router.post('/add-size', async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-
   }
 });
 // danh sách size
