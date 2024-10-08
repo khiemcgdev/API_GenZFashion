@@ -182,7 +182,7 @@ router.post('/add-product', Upload.single('image'), async (req, res) => {
       product_name: data.product_name,
       state:data.state,
       id_producttype:data.id_producttype,
-      id_suppliers:data.Suppliers,
+      id_suppliers:data.id_suppliers,
     })
     const result = await newProduct.save();
     if (result) {
@@ -573,6 +573,7 @@ router.put('/update-voucher/:id', Upload.single('image'), async (req, res) => {
     const data = req.body;
     let urlsImage;
 
+
     if (req.file) {
       urlsImage = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
     } else {
@@ -626,5 +627,6 @@ router.put('/update-voucher/:id', Upload.single('image'), async (req, res) => {
     });
   }
 });
+
 
 module.exports = router;
