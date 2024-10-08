@@ -975,4 +975,141 @@ router.get("/get-cart/:userId", async (req, res) => {
       res.status(500).json({ message: err.message });
   }
 });
+
+/*Đơn hàng*/
+//Thêm đơn hàng
+router.post('/add-order', async (req, res) => {
+  try {
+      const data = req.body;
+
+      // Tìm giỏ hàng dựa trên id_cart
+      const cart = await Cart.findById(data.id_cart);
+      if (!cart) {
+          return res.status(404).json({ message: "Giỏ hàng không tồn tại" });
+      }
+
+      // Tính tổng giá trị đơn hàng từ giỏ hàng
+      const totalAmount = cart.totalPrice;
+
+      const newOrder = new Order({
+          id_client: data.id_client,
+          id_cart: cart._id,
+          id_voucher: cart.voucher || null,
+          state: 0, // Mặc định là chưa xử lý
+          payment_method: data.payment_method,
+          total_amount: totalAmount,
+          order_time: Date.now(),
+          payment_time: null,
+          completion_time: null
+      });
+
+      const result = await newOrder.save();
+      res.status(201).json({
+          message: "Đơn hàng đã được thêm thành công",
+          data: result
+      });
+  } catch (err) {
+      console.error(err);
+      res.status(500).json({
+          message: "Có lỗi xảy ra",
+          error: err.message
+      });
+  }
+});
+//Cập nhật đơn hàng
+// Cập nhật đơn hàng
+router.put('/update-order/:id', async (req, res) => {
+  try {
+    const orderId = req.params.id;  // ID của đơn hàng cần cập nhật
+    const data = req.body;
+
+    // Lấy thông tin đơn hàng hiện tại từ DB theo id
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        "status": 404,
+        "message": "Đơn hàng không tồn tại"
+      });
+    }
+
+    // Cập nhật các trường của đơn hàng, nếu có trong request body
+    order.id_client = data.id_client || order.id_client;
+    order.id_cart = data.id_cart || order.id_cart; // Giữ id_cart hoặc cập nhật nếu có
+    order.id_voucher = data.id_voucher || order.id_voucher; // Giữ id_voucher hoặc cập nhật nếu có
+    order.state = data.state !== undefined ? data.state : order.state; // Cập nhật state nếu có
+    order.payment_method = data.payment_method || order.payment_method;
+    order.total_amount = data.total_amount || order.total_amount; // Tổng số tiền có thể được cập nhật nếu cần
+    order.order_time = data.order_time || order.order_time; // Giữ nguyên nếu không có dữ liệu mới
+    order.payment_time = data.payment_time || order.payment_time; // Giữ nguyên nếu không có dữ liệu mới
+    order.completion_time = data.completion_time || order.completion_time; // Giữ nguyên nếu không có dữ liệu mới
+
+    // Lưu thay đổi vào cơ sở dữ liệu
+    const result = await order.save();
+    if (result) {
+      res.status(200).json({
+        "status": 200,
+        "message": "Cập nhật đơn hàng thành công",
+        "data": result
+      });
+    } else {
+      res.status(400).json({
+        "status": 400,
+        "message": "Cập nhật thất bại",
+        "data": []
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      "status": 500,
+      "message": "Lỗi server",
+    });
+  }
+});
+//lấy danh sách đơn hàng
+router.get('/order', async (req, res) => {
+  try {
+    const { clientId } = req.query; // Lấy clientId từ query parameter
+
+    // Kiểm tra nếu không có clientId được gửi lên
+    if (!clientId) {
+      return res.status(400).json({
+        "status": 400,
+        "message": "Thiếu clientId"
+      });
+    }
+
+    // Tìm kiếm danh sách đơn hàng theo clientId
+    const orderList = await Order.find({ id_client: clientId })
+      .populate({
+        path: 'id_cart', 
+        populate: {
+          path: 'products.productId', // Populate để lấy thông tin sản phẩm từ giỏ hàng
+          model: 'Product' // Lấy thông tin từ bảng Product
+        }
+      })
+      .sort({ createdAt: -1 });
+
+    if (orderList.length > 0) {
+      res.json({
+        "status": 200,
+        "message": "Lấy danh sách đơn hàng thành công",
+        "data": orderList
+      });
+    } else {
+      res.json({
+        "status": 404,
+        "message": "Không có đơn hàng nào",
+        "data": []
+      });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      "status": 500,
+      "message": "Lỗi server"
+    });
+  }
+});
+
 module.exports = router;
