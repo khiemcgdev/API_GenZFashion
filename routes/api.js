@@ -463,4 +463,5 @@ router.put('/update-typeproduct/:id', Upload.single('image'), async (req, res) =
   }
 });
 
+
 module.exports = router;
