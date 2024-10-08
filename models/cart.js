@@ -7,6 +7,7 @@ const Cart =new Scheme({
        {
         productId: { type:Scheme.Types.ObjectId, ref: 'product', required: true } ,
         quantity: { type: Number, required: true, default: 1 },
+        isSelected: { type: Boolean, default: false } // Trạng thái được chọn
        }
     ],
     voucher: { 

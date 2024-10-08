@@ -9,6 +9,7 @@ const Sizes = require('../models/sizes')
 const Evaluate = require('../models/evaluate')
 const Favourite = require('../models/favourite')
 const Cart = require('../models/cart')
+const Order = require('../models/order')
 const Typeproducts = require('../models/typeproducts')
 const Typevouchers = require('../models/typevouchers')
 const Vouchers = require('../models/vouchers')
@@ -811,15 +812,20 @@ router.get('/evaluate', async (req, res) => {
     });
   }
 });
-// Hàm tính tổng giá trị giỏ hàng
+// Hàm tính tổng giá trị giỏ hàng chỉ với các sản phẩm đã chọn
 const calculateTotalPrice = async (products) => {
   let total = 0;
   for (const item of products) {
-      const product = await Product.findById(item.productId);
-      total += item.quantity * product.price;
+      if (item.isSelected) { // Chỉ tính cho sản phẩm được chọn
+          const product = await Product.findById(item.productId);
+          if (product) { // Kiểm tra sản phẩm tồn tại
+              total += item.quantity * product.price; // Tính giá của sản phẩm
+          }
+      }
   }
   return total;
 };
+
 // Hàm lấy giá trị giảm giá từ voucher
 const getDiscountValue = async (voucherId, totalPrice) => {
   const voucher = await Vouchers.findById(voucherId);
@@ -861,17 +867,17 @@ router.post("/add-to-cart", async (req, res) => {
               cart.products[productIndex].quantity += quantity;
           } else {
               // Thêm sản phẩm mới vào giỏ hàng nếu sản phẩm chưa có trong giỏ hàng
-              cart.products.push({ productId, quantity });
+              cart.products.push({ productId, quantity, isSelected:false });
           }
       } else {
           // Tạo giỏ hàng mới nếu người dùng chưa có giỏ hàng
           cart = new Cart({
               userId,
-              products: [{ productId, quantity }]
+              products: [{ productId, quantity, isSelected:false }]
           });
       }
       // Tính lại tổng giá trị của giỏ hàng
-      cart.totalPrice = await calculateTotalPrice(cart.products);
+      cart.totalPrice = await calculateTotalPrice(cart.products.filter(item => item.isSelected));
       // Lưu giỏ hàng
       const result = await cart.save();
       // Trả về phản hồi thành công
@@ -899,13 +905,18 @@ router.post("/select-products", async (req, res) => {
           return res.status(404).json({ message: 'Cart not found' });
       }
 
-      // Lọc các sản phẩm trong giỏ hàng theo ID đã chọn
-      cart.products = cart.products.filter(item => 
-          selectedProductIds.includes(item.productId.toString())
-      );
+      // Cập nhật trạng thái sản phẩm được chọn
+      cart.products.forEach(product => {
+        // Kiểm tra xem sản phẩm có trong danh sách được chọn không
+        if (selectedProductIds.includes(product.productId.toString())) {
+            // Đổi trạng thái thành true nếu đang false, và ngược lại
+            product.isSelected = !product.isSelected;
+        }
+    });
+          
+      // Tính lại tổng giá trị giỏ hàng dựa trên các sản phẩm đã chọn
+      cart.totalPrice = await calculateTotalPrice(cart.products.filter(item => item.isSelected ));
 
-      // Tính lại tổng giá trị giỏ hàng
-      cart.totalPrice = await calculateTotalPrice(cart.products);
       await cart.save();
 
       res.status(200).json({
@@ -917,7 +928,8 @@ router.post("/select-products", async (req, res) => {
       res.status(500).json({ message: err.message });
   }
 });
-// Route chọn voucher
+
+// Route chọn voucher trong giỏ hàng
 router.post("/select-voucher", async (req, res) => {
   const { userId, voucherId } = req.body;
 
@@ -934,9 +946,14 @@ router.post("/select-voucher", async (req, res) => {
       // Cập nhật voucher trong giỏ hàng
       cart.voucher = voucherId;
 
-      // Tính toán tổng giá trị giỏ hàng sau khi áp dụng voucher
-      const discountValue = await getDiscountValue(voucherId, cart.totalPrice);
-      cart.totalPrice -= discountValue; // Áp dụng giảm giá vào tổng giá trị
+      // Tính tổng giá trị của các sản phẩm đã chọn
+      const totalSelectedPrice = await calculateTotalPrice(cart.products);
+
+      // Tính toán giá trị giảm giá từ voucher
+      const discountValue = await getDiscountValue(voucherId, totalSelectedPrice);
+      
+      // Tính tổng giá sau khi áp dụng voucher
+      cart.totalPrice = totalSelectedPrice - discountValue; // Áp dụng giảm giá vào tổng giá trị
 
       await cart.save();
 
@@ -949,6 +966,8 @@ router.post("/select-voucher", async (req, res) => {
       res.status(500).json({ message: err.message });
   }
 });
+
+
 // Route lấy danh sách sản phẩm trong giỏ hàng của người dùng
 router.get("/get-cart/:userId", async (req, res) => {
   const { userId } = req.params;
@@ -1085,7 +1104,7 @@ router.get('/order', async (req, res) => {
         path: 'id_cart', 
         populate: {
           path: 'products.productId', // Populate để lấy thông tin sản phẩm từ giỏ hàng
-          model: 'Product' // Lấy thông tin từ bảng Product
+          model: 'product' // Lấy thông tin từ bảng Product
         }
       })
       .sort({ createdAt: -1 });
