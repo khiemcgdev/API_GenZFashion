@@ -2,11 +2,17 @@ const mongoose =require('mongoose');
 const Scheme =mongoose.Schema;
 
 const Cart =new Scheme({
-    id_client:{type:String,require: true},
-    id_product:{type:Scheme.Types.ObjectId,ref:'product'},
-    id_voucher:{type:Scheme.Types.ObjectId,ref:'vouchers'},
-    total_payment:{type:Number},
-    quantity:{type:Number},
+    userId:{type:String,required: true},
+    products:[
+       {
+        productId: { type:Scheme.Types.ObjectId, ref: 'product', required: true } ,
+        quantity: { type: Number, required: true, default: 1 },
+       }
+    ],
+    voucher: { 
+        type: Scheme.Types.ObjectId, ref: 'vouchers', default: null 
+    },
+    totalPrice: { type: Number, required: true, default: 0 }
 },{
     timestamps:true,
 })
