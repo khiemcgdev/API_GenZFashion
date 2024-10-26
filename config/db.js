@@ -2,6 +2,7 @@ const mongoose=require('mongoose');
 mongoose.set('strictQuery',true)
 //compasss
 const local="mongodb://127.0.0.1:27017/GenZFashion"
+
 // const local="mongodb://127.0.0.1:27017/QLiProduct"
 //alast(cloud)
 const dataatlas="mongodb+srv://dieptvph40380:dieptvph40380@cluster0.hdhv3ze.mongodb.net/?retryWrites=true&w=majority"
