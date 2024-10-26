@@ -1167,5 +1167,69 @@ router.get('/order', async (req, res) => {
     });
   }
 });
+router.get('/revenue-statistics', async (req, res) => {
+  try {
+    // Lấy danh sách đơn hàng đã hoàn thành (state = 1 có thể là đã hoàn thành)
+    const completedOrders = await Order.find({ state: 1 }).populate('id_cart');
+
+    // Tính tổng doanh thu
+    let totalRevenue = 0;
+
+    completedOrders.forEach(order => {
+      totalRevenue += order.total_amount; 
+    });
+
+    res.json({
+      "status": 200,
+      "message": "Thống kê doanh thu thành công",
+      "data": {
+        totalRevenue: totalRevenue,
+        totalOrders: completedOrders.length
+      }
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      "status": 500,
+      "message": "Lỗi server"
+    });
+  }
+});
+// hoá đơn
+router.post('/create-invoice', async (req, res) => {
+  try {
+    const { orderId } = req.body;
+
+    const order = await Order.findById(orderId).populate('id_cart');
+
+    if (!order) {
+      return res.status(404).json({
+        "status": 404,
+        "message": "Đơn hàng không tồn tại"
+      });
+    }
+    const invoice = {
+      invoiceId: order._id, 
+      clientId: order.id_client,
+      products: order.id_cart.products,
+      totalAmount: order.total_amount,
+      paymentMethod: order.payment_method,
+      orderTime: order.order_time,
+      state: order.statex
+    };
+
+    res.status(200).json({
+      "status": 200,
+      "message": "Hóa đơn được tạo thành công",
+      "data": invoice
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      "status": 500,
+      "message": "Lỗi server"
+    });
+  }
+});
 
 module.exports = router;
