@@ -18,7 +18,7 @@ router.post('/add-supplier', Upload.single('image'), async (req, res) => {
   try {
     const data = req.body;
     const { file } = req
-    const urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+    const urlsImage = `${req.protocol}://${req.get("host")}/upload/${file.filename}`;
     const newSuppliers = new Suppliers({
       name: data.name,
       phone: data.phone,
@@ -85,7 +85,7 @@ router.put('/update-supplier/:id', Upload.single('image'), async (req, res) => {
     // Nếu có file ảnh mới thì cập nhật, không thì giữ ảnh cũ
     let urlsImage = supplier.image; // Giữ ảnh cũ nếu không có ảnh mới
     if (file) {
-      urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+      urlsImage = `${req.protocol}://${req.get("host")}/upload/${file.filename}`;
     }
 
     // Cập nhật các trường của nhà cung cấp
@@ -342,7 +342,7 @@ router.post('/add-type', Upload.single('image'), async (req, res) => {
   try {
       const data = req.body;
       const { file } = req;
-      const urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+      const urlsImage = `${req.protocol}://${req.get("host")}/upload/${file.filename}`;
 
       // Giả sử bạn gửi một chuỗi chứa các ID kích thước, phân cách bằng dấu phẩy
       const sizesArray = data.id_size.split(',').map(id => id.trim()); // Chia chuỗi thành mảng và loại bỏ khoảng trắng
@@ -350,7 +350,7 @@ router.post('/add-type', Upload.single('image'), async (req, res) => {
       const newTypeproducts = new Typeproducts({
           name: data.name,
           image: urlsImage,
-          id_size: sizesArray // Lưu mảng kích thước vào trường id_size
+          id_size: sizesArray 
       });
 
       const result = await newTypeproducts.save();
@@ -440,7 +440,7 @@ router.put('/update-typeproduct/:id', Upload.single('image'), async (req, res) =
     }
     let urlsImage = typeproduct.image;
     if (file) {
-      urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+      urlsImage = `${req.protocol}://${req.get("host")}/upload/${file.filename}`;
     }
 
     // Cập nhật các trường của type
@@ -523,7 +523,7 @@ router.post('/add-voucher', Upload.single('image'), async (req, res) => {
   try {
     const data = req.body;
     const { file } = req
-    const urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+    const urlsImage = `${req.protocol}://${req.get("host")}/upload/${file.filename}`;
 
     const newVouchers = new Vouchers({
       name: data.name,
@@ -586,7 +586,7 @@ router.put('/update-voucher/:id', Upload.single('image'), async (req, res) => {
 
 
     if (req.file) {
-      urlsImage = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+      urlsImage = `${req.protocol}://${req.get("host")}/upload/${req.file.filename}`;
     } else {
       // Giữ lại đường dẫn ảnh cũ
       const existingVoucher = await Vouchers.findById(voucherId);
