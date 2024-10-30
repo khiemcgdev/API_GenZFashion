@@ -340,39 +340,47 @@ router.get("/get-list-size", async (req, res) => {
 // thêm loại
 router.post('/add-type', Upload.single('image'), async (req, res) => {
   try {
-    const data = req.body;
-    const { file } = req
-    const urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+      const data = req.body;
+      const { file } = req;
+      const urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
 
-    const newTypeproducts = new Typeproducts({
-      name: data.name,
-      image: urlsImage,
-      id_size: data.id_size
-    })
-    const result = await newTypeproducts.save();
-    if (result) {
-      res.json({
-        "status": 200,
-        "message": "Thêm thành công",
+      // Giả sử bạn gửi một chuỗi chứa các ID kích thước, phân cách bằng dấu phẩy
+      const sizesArray = data.id_size.split(',').map(id => id.trim()); // Chia chuỗi thành mảng và loại bỏ khoảng trắng
 
-        "data": result
+      const newTypeproducts = new Typeproducts({
+          name: data.name,
+          image: urlsImage,
+          id_size: sizesArray // Lưu mảng kích thước vào trường id_size
       });
-    } else {
-      res.json({
-        "status": 400,
-        "message": "Thất bại",
-        "data": []
-      });
-    }
+
+      const result = await newTypeproducts.save();
+      if (result) {
+          res.json({
+              "status": 200,
+              "message": "Thêm thành công",
+              "data": result
+          });
+      } else {
+          res.json({
+              "status": 400,
+              "message": "Thất bại",
+              "data": []
+          });
+      }
   } catch (err) {
-    console.log(err);
+      console.log(err);
+      res.status(500).json({ message: err.message });
   }
 });
+
 
 // danh sách loại sản phẩm
 router.get('/typeproduct', async (req, res) => {
   try {
-    const TypeproductsList = await Typeproducts.find().sort({ createdAt: -1 });
+    const TypeproductsList = await Typeproducts.find()
+      .populate('id_size', 'name') // Phân giải kích thước
+      .sort({ createdAt: -1 });
+console.log("TypeproductsList:", TypeproductsList)
     if (TypeproductsList.length > 0) {
       res.json({
         "status": 200,
@@ -382,7 +390,7 @@ router.get('/typeproduct', async (req, res) => {
     } else {
       res.json({
         "status": 404,
-        "message": "Không có danh sach nào",
+        "message": "Không có danh sách nào",
         "data": []
       });
     }
@@ -394,6 +402,7 @@ router.get('/typeproduct', async (req, res) => {
     });
   }
 });
+
 // xóa loại sản phẩm
 router.delete("/delete-typeproduct-by-id/:id", async (req, res) => {
   try {
@@ -436,9 +445,7 @@ router.put('/update-typeproduct/:id', Upload.single('image'), async (req, res) =
 
     // Cập nhật các trường của type
     typeproduct.name = data.name || typeproduct.name;
-    typeproduct.phone = data.phone || typeproduct.phone;
-    typeproduct.email = data.email || typeproduct.email;
-    typeproduct.description = data.description || typeproduct.description;
+    typeproduct.id_size=data.id_size
     typeproduct.image = urlsImage;
 
     const result = await typeproduct.save();
@@ -1174,7 +1181,6 @@ router.get('/revenue-statistics', async (req, res) => {
 
     // Tính tổng doanh thu
     let totalRevenue = 0;
-
     completedOrders.forEach(order => {
       totalRevenue += order.total_amount; 
     });
