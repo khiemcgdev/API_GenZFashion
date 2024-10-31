@@ -378,8 +378,8 @@ router.post('/add-type', Upload.single('image'), async (req, res) => {
 router.get('/typeproduct', async (req, res) => {
   try {
     const TypeproductsList = await Typeproducts.find()
-      .populate('id_size', 'name') // Phân giải kích thước
-      .sort({ createdAt: -1 });
+      .populate('id_size', 'name')  // Phân giải kích thước
+      .sort({ createdAt: 1 });
 console.log("TypeproductsList:", TypeproductsList)
     if (TypeproductsList.length > 0) {
       res.json({
@@ -431,23 +431,28 @@ router.put('/update-typeproduct/:id', Upload.single('image'), async (req, res) =
     const typeID = req.params.id;
     const data = req.body;
     const { file } = req;
+
+    // Tìm loại sản phẩm theo ID
     const typeproduct = await Typeproducts.findById(typeID);
     if (!typeproduct) {
-      return res.json({
+      return res.status(404).json({
         "status": 404,
-        "message": " không tồn tại"
+        "message": "Không tồn tại loại sản phẩm"
       });
     }
+
+    // Giữ nguyên đường dẫn hình ảnh cũ nếu không có hình ảnh mới
     let urlsImage = typeproduct.image;
     if (file) {
       urlsImage = `${req.protocol}://${req.get("host")}/upload/${file.filename}`;
     }
 
-    // Cập nhật các trường của type
+    // Cập nhật các trường của loại sản phẩm
     typeproduct.name = data.name || typeproduct.name;
-    typeproduct.id_size=data.id_size
+    typeproduct.id_size = data.id_size ? data.id_size.split(',').map(id => id.trim()) : typeproduct.id_size;
     typeproduct.image = urlsImage;
 
+    // Lưu lại các thay đổi
     const result = await typeproduct.save();
     if (result) {
       res.json({
@@ -470,6 +475,7 @@ router.put('/update-typeproduct/:id', Upload.single('image'), async (req, res) =
     });
   }
 });
+
 //**loại voucher */
 //thêm loại voucher
 router.post('/add-typevoucher', async (req, res) => {
