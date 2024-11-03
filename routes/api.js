@@ -174,7 +174,7 @@ router.get('/get-product-by-name', async (req, res) => {
 })
 // Thêm sản phẩm 
 router.post('/add-product', Upload.array('image', 5), async (req, res) => {
-  // Upload.array('image', 5) => up nhiều file tối đa là 5
+  // Upload.array('image', 5) => up nhiều file tối đa là 5 abc
   try {
     const data = req.body;
     const files = req.files;
