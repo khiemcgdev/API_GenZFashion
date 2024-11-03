@@ -173,11 +173,21 @@ router.get('/get-product-by-name', async (req, res) => {
   }
 })
 // Thêm sản phẩm 
-router.post('/add-product', Upload.single('image'), async (req, res) => {
+router.post('/add-product', Upload.array('image', 5), async (req, res) => {
+  // Upload.array('image', 5) => up nhiều file tối đa là 5
   try {
     const data = req.body;
-    const { file } = req
-    const urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+    const files = req.files;
+    if (!files || files.length === 0) {
+      return res.status(400).json({
+        "status": 400,
+        "message": "Không có file nào được tải lên"
+      });
+    }
+
+    // Tạo mảng URLs từ các file đã tải lên
+    const urlsImage = files.map((file) => `${req.protocol}://${req.get("host")}/upload/${file.filename}`);
+
     const newProduct = new Product({
       image: urlsImage,
       quantity: data.quantity,
@@ -187,7 +197,8 @@ router.post('/add-product', Upload.single('image'), async (req, res) => {
       state: data.state,
       id_producttype: data.id_producttype,
       id_suppliers: data.id_suppliers,
-    })
+    });
+
     const result = await newProduct.save();
     if (result) {
       res.json({
@@ -196,7 +207,7 @@ router.post('/add-product', Upload.single('image'), async (req, res) => {
         "data": result
       });
     } else {
-      res.json({
+      res.status(400).json({
         "status": 400,
         "message": "Thất bại",
         "data": []
@@ -204,8 +215,14 @@ router.post('/add-product', Upload.single('image'), async (req, res) => {
     }
   } catch (err) {
     console.log(err);
+    res.status(500).json({
+      "status": 500,
+      "message": "Lỗi máy chủ",
+      "error": err.message
+    });
   }
 });
+
 
 //sửa sản phẩm
 router.put('/update-product/:id', Upload.single('image'), async (req, res) => {
@@ -262,7 +279,7 @@ router.put('/update-product/:id', Upload.single('image'), async (req, res) => {
   }
 });
 // danh sách sản phẩm
-router.get('/prodct', async (req, res) => {
+router.get('/get-list-products', async (req, res) => {
   try {
     const productList = await Product.find().sort({ createdAt: -1 });
     if (productList.length > 0) {

@@ -5,7 +5,7 @@ const local="mongodb://127.0.0.1:27017/GenZFashion"
 
 // const local="mongodb://127.0.0.1:27017/QLiProduct"
 //alast(cloud)
-const dataatlas="mongodb+srv://apiGenz:123@cluster0.f5sdmgn.mongodb.net/GenZFashion?retryWrites=true&w=majority&appName=Cluster0"
+const dataatlas="mongodb+srv://khiem07:123@cluster0.f5sdmgn.mongodb.net/GenZFashion?retryWrites=true&w=majority&appName=Cluster0"
 const connect = async ()=>{
     try{
        await mongoose.connect(dataatlas,{useNewUrlParser:true,useUnifiedTopology:true,})
